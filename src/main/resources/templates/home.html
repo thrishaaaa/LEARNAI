@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Workspace | Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            /* Palette: Light & Dark Blue - Classic Professional */
+            --primary-dark: #003366;  /* Deep Navy */
+            --primary-light: #e3f2fd; /* Very Light Blue */
+            --accent-blue: #0d6efd;   /* Standard Bootstrap Blue */
+            --text-dark: #2c3e50;
+            --chat-bg: #f8f9fa;
+        }
+
+        body {
+            background-color: var(--chat-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navbar Styling */
+        .navbar-custom {
+            background-color: var(--primary-dark);
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .navbar-brand {
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* --- DASHBOARD VIEW (Selection Screen) --- */
+        #selection-screen {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .model-card {
+            border: none;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            height: 100%;
+        }
+
+        .model-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,51,102,0.15);
+            border: 1px solid var(--accent-blue);
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            color: var(--primary-dark);
+            margin-bottom: 1rem;
+        }
+
+        .model-card.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background-color: #f1f1f1;
+        }
+        .model-card.disabled:hover {
+            transform: none;
+            box-shadow: none;
+            border: none;
+        }
+
+        /* --- CHAT VIEW (The Grok Interface) --- */
+        #chat-screen {
+            display: none; /* Hidden by default */
+            flex: 1;
+            flex-direction: column;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            border-left: 1px solid #dee2e6;
+            border-right: 1px solid #dee2e6;
+        }
+
+        .chat-header {
+            background-color: var(--primary-light);
+            border-bottom: 1px solid #dee2e6;
+            padding: 15px 20px;
+            color: var(--primary-dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-history {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: #fff;
+        }
+
+        /* Message Bubbles */
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .msg-bubble {
+            max-width: 70%;
+            padding: 10px 16px;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .bot .msg-bubble {
+            background-color: var(--primary-light);
+            color: var(--text-dark);
+            border-bottom-left-radius: 4px;
+        }
+
+        .user .msg-bubble {
+            background-color: var(--primary-dark);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            margin: 0 10px;
+        }
+
+        .bot .avatar { background-color: var(--primary-dark); color: white; }
+        .user .avatar { display: none; } /* Hide user avatar for cleaner look */
+
+        /* Input Area */
+        .chat-input-area {
+            border-top: 1px solid #dee2e6;
+            padding: 20px;
+            background-color: #fff;
+        }
+
+        .btn-send {
+            background-color: var(--primary-dark);
+            color: white;
+            border: none;
+        }
+        .btn-send:hover {
+            background-color: #002244;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-custom navbar-expand-lg">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#"><i class="fas fa-robot me-2"></i>AI Learning Lab</a>
+        <span class="navbar-text text-white small">Spring Boot Backend</span>
+    </div>
+</nav>
+
+<div id="selection-screen" class="container">
+    <div class="row g-4 justify-content-center w-100">
+        <div class="col-12 text-center mb-4">
+            <h2 style="color: var(--primary-dark);">Select an AI Model</h2>
+            <p class="text-muted">Choose a tool to start interacting</p>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card model-card h-100 p-4 text-center" onclick="openChat()">
+                <div class="card-body">
+                    <div class="card-icon"><i class="fas fa-bolt"></i></div>
+                    <h4 class="card-title fw-bold" style="color: var(--primary-dark);">GrokPulse</h4>
+                    <p class="card-text text-muted mt-3">
+                        Direct integration with the xAI Grok API. High speed, standard reasoning.
+                    </p>
+                    <span class="badge bg-primary rounded-pill mt-2">Active</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card model-card disabled h-100 p-4 text-center">
+                <div class="card-body">
+                    <div class="card-icon text-muted"><i class="fas fa-brain"></i></div>
+                    <h4 class="card-title fw-bold text-muted">My Custom Bot</h4>
+                    <p class="card-text text-muted mt-3">
+                        A model fine-tuned on specific project data.
+                    </p>
+                    <span class="badge bg-secondary rounded-pill mt-2">Coming Soon</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card model-card disabled h-100 p-4 text-center">
+                <div class="card-body">
+                    <div class="card-icon text-muted"><i class="fas fa-eye"></i></div>
+                    <h4 class="card-title fw-bold text-muted">Vision AI</h4>
+                    <p class="card-text text-muted mt-3">
+                        Image processing and analysis capabilities.
+                    </p>
+                    <span class="badge bg-secondary rounded-pill mt-2">Coming Soon</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="chat-screen">
+    <div class="chat-header">
+        <div class="d-flex align-items-center">
+            <button class="btn btn-outline-primary btn-sm me-3" onclick="closeChat()">
+                <i class="fas fa-arrow-left"></i> Back
+            </button>
+            <div>
+                <h5 class="mb-0 fw-bold"><i class="fas fa-bolt me-2"></i>GrokPulse</h5>
+                <small class="text-muted">Powered by xAI API</small>
+            </div>
+        </div>
+        <div>
+            <i class="fas fa-circle text-success small"></i> <span class="small text-muted ms-1">Online</span>
+        </div>
+    </div>
+
+    <div class="chat-history" id="chat-history">
+        <div class="message bot">
+            <div class="avatar">GP</div>
+            <div class="msg-bubble">
+                Hello! I am <strong>GrokPulse</strong>. I'm connected to the xAI API backend. How can I help you learn about AI today?
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-input-area">
+        <div class="input-group">
+            <input type="text" class="form-control" placeholder="Type your message here..." id="user-input">
+            <button class="btn btn-send" type="button" id="send-btn">
+                <i class="fas fa-paper-plane me-1"></i> Send
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+        function openChat() {
+            document.getElementById('selection-screen').style.display = 'none';
+            document.getElementById('chat-screen').style.display = 'flex';
+        }
+
+        function closeChat() {
+            document.getElementById('chat-screen').style.display = 'none';
+            document.getElementById('selection-screen').style.display = 'flex';
+        }
+
+        // Note: The actual API logic will be added later using fetch()
+    </script>
+</body>
+</html>
