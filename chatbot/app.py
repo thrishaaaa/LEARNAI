@@ -23,7 +23,7 @@ def chat():
 
     print(f"Java sent us: {user_message}")
 
-    # 2. Setup the request to Grok
+    # 2. Setup the request to Groq
     headers = {
         "Authorization": f"Bearer {API_KEY}",
         "Content-Type": "application/json"
@@ -34,15 +34,12 @@ def chat():
             {"role": "system", "content": "You are GrokPulse, a helpful AI assistant."},
             {"role": "user", "content": user_message}
         ],
-<<<<<<< HEAD
-        "model": "llama3-8b-8192", # Update this if you use a specific model version
-=======
-        "model": "llama-3.1-8b-instant", # Update this if you use a specific model version
->>>>>>> 54dedb5 (Secure commit: Removed API keys and added gitignore)
+        # Used the newer model because the old one (llama3) is deprecated
+        "model": "llama-3.1-8b-instant", 
         "stream": False
     }
 
-    # 3. Send it to Grok
+    # 3. Send it to Groq
     try:
         response = requests.post("https://api.groq.com/openai/v1/chat/completions", json=payload, headers=headers)
         
