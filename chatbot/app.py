@@ -34,7 +34,11 @@ def chat():
             {"role": "system", "content": "You are GrokPulse, a helpful AI assistant."},
             {"role": "user", "content": user_message}
         ],
+<<<<<<< HEAD
         "model": "llama3-8b-8192", # Update this if you use a specific model version
+=======
+        "model": "llama-3.1-8b-instant", # Update this if you use a specific model version
+>>>>>>> 54dedb5 (Secure commit: Removed API keys and added gitignore)
         "stream": False
     }
 
