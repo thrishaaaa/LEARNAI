@@ -155,9 +155,9 @@
             font-size: 0.9rem;
             margin: 0 10px;
         }
-
+        
         .bot .avatar { background-color: var(--primary-dark); color: white; }
-        .user .avatar { display: none; } /* Hide user avatar for cleaner look */
+        .user .avatar { display: none; } 
 
         /* Input Area */
         .chat-input-area {
@@ -211,22 +211,17 @@
                 <div class="card-body">
                     <div class="card-icon text-muted"><i class="fas fa-brain"></i></div>
                     <h4 class="card-title fw-bold text-muted">My Custom Bot</h4>
-                    <p class="card-text text-muted mt-3">
-                        A model fine-tuned on specific project data.
-                    </p>
+                    <p class="card-text text-muted mt-3">A model fine-tuned on specific project data.</p>
                     <span class="badge bg-secondary rounded-pill mt-2">Coming Soon</span>
                 </div>
             </div>
         </div>
-
         <div class="col-md-4">
             <div class="card model-card disabled h-100 p-4 text-center">
                 <div class="card-body">
                     <div class="card-icon text-muted"><i class="fas fa-eye"></i></div>
                     <h4 class="card-title fw-bold text-muted">Vision AI</h4>
-                    <p class="card-text text-muted mt-3">
-                        Image processing and analysis capabilities.
-                    </p>
+                    <p class="card-text text-muted mt-3">Image processing and analysis capabilities.</p>
                     <span class="badge bg-secondary rounded-pill mt-2">Coming Soon</span>
                 </div>
             </div>
@@ -270,17 +265,116 @@
 </div>
 
 <script>
-        function openChat() {
-            document.getElementById('selection-screen').style.display = 'none';
-            document.getElementById('chat-screen').style.display = 'flex';
-        }
+    // --- UI Toggling Functions ---
+    function openChat() {
+        document.getElementById('selection-screen').style.display = 'none';
+        document.getElementById('chat-screen').style.display = 'flex';
+        scrollToBottom();
+    }
 
-        function closeChat() {
-            document.getElementById('chat-screen').style.display = 'none';
-            document.getElementById('selection-screen').style.display = 'flex';
-        }
+    function closeChat() {
+        document.getElementById('chat-screen').style.display = 'none';
+        document.getElementById('selection-screen').style.display = 'flex';
+    }
 
-        // Note: The actual API logic will be added later using fetch()
-    </script>
+    function scrollToBottom() {
+        const history = document.getElementById('chat-history');
+        history.scrollTop = history.scrollHeight;
+    }
+
+    // --- Sending Messages Logic ---
+    const userInput = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+    const chatHistory = document.getElementById('chat-history');
+
+    // Send when hitting 'Enter' key
+    userInput.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    // Send when clicking the button
+    sendBtn.addEventListener('click', sendMessage);
+
+    async function sendMessage() {
+        const message = userInput.value.trim();
+        if (!message) return; // Don't send empty messages
+
+        // 1. Display User Message immediately
+        addMessageToUI('user', message);
+        userInput.value = ''; // Clear input field
+        scrollToBottom();
+
+        // 2. Show a temporary "Thinking..." bubble
+        const loadingId = addLoadingIndicator();
+        scrollToBottom();
+
+        try {
+            // 3. Send the message to your Spring Boot Controller
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: message })
+            });
+
+            // 4. Remove "Thinking..." and handle response
+            removeMessage(loadingId);
+            
+            if (response.ok) {
+                const data = await response.json();
+                addMessageToUI('bot', data.reply);
+            } else {
+                addMessageToUI('bot', "Error: The server could not process your request.");
+            }
+
+        } catch (error) {
+            removeMessage(loadingId);
+            addMessageToUI('bot', "Error: Network issue. Is the backend running?");
+            console.error(error);
+        }
+        
+        scrollToBottom();
+    }
+
+    // --- Helper Functions to Update the Chat UI ---
+    function addMessageToUI(sender, text) {
+        const msgDiv = document.createElement('div');
+        msgDiv.classList.add('message', sender);
+        
+        // Bot gets an avatar, user does not
+        const avatar = sender === 'bot' ? '<div class="avatar">GP</div>' : '';
+        
+        msgDiv.innerHTML = `
+            ${avatar}
+            <div class="msg-bubble">${text}</div>
+        `;
+        
+        chatHistory.appendChild(msgDiv);
+    }
+
+    function addLoadingIndicator() {
+        const id = 'loading-' + Date.now();
+        const msgDiv = document.createElement('div');
+        msgDiv.id = id;
+        msgDiv.classList.add('message', 'bot');
+        msgDiv.innerHTML = `
+            <div class="avatar">GP</div>
+            <div class="msg-bubble text-muted">
+                <i class="fas fa-ellipsis-h"></i> Thinking...
+            </div>
+        `;
+        chatHistory.appendChild(msgDiv);
+        return id;
+    }
+
+    function removeMessage(id) {
+        const el = document.getElementById(id);
+        if (el) el.remove();
+    }
+</script>
+
 </body>
 </html>
